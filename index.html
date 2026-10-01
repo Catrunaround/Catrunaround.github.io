@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yikang Yu</title>
+<meta name="description" content="Yikang Yu builds document pipelines for an AI teaching assistant, deployment tooling for humanoid table tennis, and analytical data services.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a lab-notebook page. A narrow mono margin rail carries dates and labels; one reading column carries the work. */
+:root {
+  --bg: #F3F5F8;
+  --surface: #FCFCFD;
+  --ink: #0E1A2B;
+  --ink-2: #405064;
+  --muted: #5E6A7D;
+  --rule: #D9DEE6;
+  --accent: #003262;
+  --gold: #FDB515;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --f-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --rail: 10.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C121C; --surface: #131C2B; --ink: #E7ECF3; --ink-2: #B4BECC; --muted: #8995A8;
+    --rule: #243149; --accent: #9CC0F2; --gold: #FDB515;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C121C; --surface: #131C2B; --ink: #E7ECF3; --ink-2: #B4BECC; --muted: #8995A8;
+  --rule: #243149; --accent: #9CC0F2; --gold: #FDB515;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+a:hover { text-decoration-color: currentColor; }
+a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 3px; }
+ul, ol, dl, dd, p, h1, h2, h3 { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+
+.page { max-width: 70rem; margin: 0 auto; padding-inline: clamp(16px, 4vw, 44px); padding-block: clamp(40px, 7vw, 88px) 56px; }
+
+/* ---------- intro ---------- */
+.intro { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); column-gap: 2.5rem; padding-bottom: 3rem; }
+.intro > * { grid-column: 2; }
+.eyebrow { font-family: var(--f-mono); font-size: .8125rem; letter-spacing: .04em; color: var(--muted); }
+h1 {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(3.25rem, 10vw, 7rem);
+  line-height: .95;
+  letter-spacing: -.035em;
+  margin-top: .75rem;
+  text-wrap: balance;
+}
+.ball {
+  display: inline-block;
+  width: .2em; height: .2em;
+  margin-left: .06em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--gold) 55%, #fff) 0 18%, var(--gold) 60%, color-mix(in srgb, var(--gold) 80%, #000) 100%);
+  vertical-align: baseline;
+  animation: bounce 1.15s cubic-bezier(.3, 0, .7, 1) .15s both;
+}
+@keyframes bounce {
+  0%   { transform: translateY(-1.1em); }
+  38%  { transform: translateY(0) scale(1.08, .9); animation-timing-function: cubic-bezier(.2, .6, .4, 1); }
+  60%  { transform: translateY(-.32em); animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
+  78%  { transform: translateY(0) scale(1.04, .95); }
+  89%  { transform: translateY(-.07em); }
+  100% { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) { .ball { animation: none; } }
+
+.lede { font-size: clamp(1.125rem, 2.1vw, 1.375rem); line-height: 1.5; color: var(--ink-2); max-width: 38em; margin-top: 1.5rem; text-wrap: pretty; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.links { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem; margin-top: 1.5rem; font-weight: 500; }
+.email { display: inline-flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.email a { user-select: all; }
+.copy {
+  font: 500 .75rem/1 var(--f-mono);
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: .3rem .5rem;
+  cursor: pointer;
+}
+.copy:hover { border-color: var(--muted); color: var(--ink); }
+.tally { display: flex; flex-wrap: wrap; gap: .75rem 2rem; margin-top: 2.25rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); font-family: var(--f-mono); font-size: .8125rem; color: var(--muted); }
+.tally div { display: flex; align-items: baseline; gap: .5rem; }
+.tally dt { order: 2; }
+.tally dd { order: 1; color: var(--ink); font-weight: 500; font-size: 1rem; font-variant-numeric: tabular-nums; }
+
+/* ---------- blocks with a margin rail ---------- */
+.block { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); column-gap: 2.5rem; row-gap: .75rem; padding-block: 2.75rem; border-top: 1px solid var(--rule); }
+.block > .body { min-width: 0; }
+.label { font-family: var(--f-mono); font-weight: 500; font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-2); }
+.rail-note { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); margin-top: .35rem; }
+.section-title { font-family: var(--f-display); font-weight: 700; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -.02em; line-height: 1.15; text-wrap: balance; }
+.section-lede { color: var(--ink-2); margin-top: .5rem; max-width: 38em; }
+
+/* ---------- activity chart ---------- */
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 1.25rem 1.25rem 1rem; margin-top: 1.5rem; }
+.legend { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; font-size: .875rem; }
+.legend li { display: flex; align-items: center; gap: .5rem; color: var(--ink-2); }
+.legend .sw { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: none; }
+.legend .n { font-family: var(--f-mono); font-size: .8125rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chart { position: relative; margin-top: 1rem; }
+.chart svg { display: block; overflow: visible; touch-action: pan-y; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .axis { stroke: var(--muted); stroke-opacity: .5; stroke-width: 1; }
+.chart .tick { fill: var(--muted); font-family: var(--f-mono); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart .peak { fill: var(--ink-2); font-family: var(--f-mono); font-size: 11px; font-weight: 500; }
+.chart .hl { fill: var(--ink); opacity: .05; }
+.tip {
+  position: absolute; top: 0; z-index: 2; pointer-events: none;
+  min-width: 12rem; padding: .625rem .75rem;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(10, 20, 40, .14);
+  font-size: .8125rem; line-height: 1.45;
+}
+.tip b { display: block; font-weight: 600; margin-bottom: .25rem; }
+.tip .row { display: flex; align-items: center; gap: .5rem; color: var(--ink-2); }
+.tip .row .sw { width: 8px; height: 8px; border-radius: 2px; background: var(--c); flex: none; }
+.tip .row span:last-child { margin-left: auto; font-family: var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.tip .row.zero { opacity: .45; }
+.chart-note { font-size: .8125rem; color: var(--muted); margin-top: .75rem; max-width: 44em; }
+details.data { margin-top: .75rem; font-size: .875rem; }
+details.data summary { cursor: pointer; color: var(--accent); font-weight: 500; width: fit-content; }
+.table-wrap { overflow-x: auto; margin-top: .75rem; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: .35rem .75rem; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--rule); }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-weight: 500; color: var(--ink-2); font-size: .8125rem; }
+td { font-family: var(--f-mono); font-size: .8125rem; }
+td.z { color: var(--muted); opacity: .6; }
+tfoot td { font-weight: 500; color: var(--ink); border-bottom: none; }
+
+/* ---------- projects ---------- */
+.project .when { font-family: var(--f-mono); font-size: .8125rem; color: var(--ink); font-weight: 500; }
+.project .focus { font-size: .8125rem; color: var(--ink-2); margin-top: .35rem; line-height: 1.45; }
+.project .where { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); margin-top: .5rem; overflow-wrap: anywhere; }
+.project h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; font-family: var(--f-display); font-weight: 700; font-size: clamp(1.5rem, 3vw, 1.875rem); letter-spacing: -.02em; line-height: 1.15; }
+.project h3 .dot { width: .42em; height: .42em; border-radius: 50%; background: var(--c); align-self: center; flex: none; }
+.project h3 .sub { font-family: var(--f-body); font-weight: 400; font-size: 1rem; letter-spacing: 0; color: var(--ink-2); }
+.project .summary { margin-top: .75rem; max-width: 40em; color: var(--ink); }
+.project ul.did { margin-top: 1rem; display: grid; gap: .6rem; max-width: 42em; }
+.project ul.did li { position: relative; padding-left: 1.25rem; color: var(--ink-2); }
+.project ul.did li::before { content: ""; position: absolute; left: 0; top: .72em; width: .5rem; height: 1.5px; background: var(--c); }
+.ref { font-family: var(--f-mono); font-size: .8125rem; white-space: nowrap; }
+.facts { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-top: 1.25rem; font-family: var(--f-mono); font-size: .8125rem; color: var(--muted); }
+.facts b { font-weight: 500; color: var(--ink); }
+
+/* ---------- timeline ---------- */
+.timeline { display: grid; gap: 0; }
+.timeline li { display: grid; grid-template-columns: 5.5rem 7.5rem minmax(0, 1fr); column-gap: 1rem; padding-block: .6rem; border-bottom: 1px solid var(--rule); }
+.timeline li:last-child { border-bottom: none; }
+.timeline time { font-family: var(--f-mono); font-size: .8125rem; color: var(--ink); padding-top: .1rem; }
+.timeline .proj { display: flex; align-items: center; gap: .45rem; font-size: .8125rem; color: var(--muted); align-self: start; padding-top: .15rem; }
+.timeline .proj::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
+.timeline p { color: var(--ink-2); }
+
+/* ---------- tools ---------- */
+.tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1.25rem 2rem; }
+.tools dt { font-family: var(--f-mono); font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.tools dd { margin-top: .35rem; color: var(--ink); }
+
+/* ---------- footer ---------- */
+.foot-links { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem; font-weight: 500; }
+.colophon { margin-top: 1rem; font-size: .8125rem; color: var(--muted); max-width: 44em; }
+
+@media (max-width: 760px) {
+  .intro, .block { grid-template-columns: minmax(0, 1fr); }
+  .intro > * { grid-column: 1; }
+  .block { padding-block: 2.25rem; }
+  .project .rail { display: flex; flex-wrap: wrap; gap: .25rem 1rem; align-items: baseline; }
+  .project .focus, .project .where { margin-top: 0; }
+  .timeline li { grid-template-columns: 5rem minmax(0, 1fr); }
+  .timeline li p { grid-column: 2; }
+  .timeline .proj { grid-column: 2; grid-row: 1; }
+  .timeline time { grid-row: 1 / span 2; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="intro">
+    <p class="eyebrow">UC Berkeley · Retrieval · Robotics · Data systems</p>
+    <h1>Yikang Yu<span class="ball" aria-hidden="true"></span></h1>
+    <p class="lede">I build the data pipelines and tooling that learning systems depend on. Most of my work so far is <strong>document conversion and retrieval for an AI teaching assistant</strong>, along with <strong>safe run controls for a humanoid robot that plays table tennis</strong> and <strong>analytical query services over large datasets</strong>.</p>
+    <ul class="links">
+      <li class="email"><a href="mailto:yyk956614@berkeley.edu" id="email-1">yyk956614@berkeley.edu</a><button type="button" class="copy" data-copy="yyk956614@berkeley.edu" data-target="email-1">Copy</button></li>
+      <li><a href="https://github.com/Catrunaround" target="_blank" rel="noopener">GitHub @Catrunaround</a></li>
+      <li><a href="https://github.com/yikangyu-usc" target="_blank" rel="noopener">GitHub @yikangyu-usc</a></li>
+    </ul>
+    <dl class="tally" aria-label="Public GitHub activity at a glance">
+      <div><dt>public commits</dt><dd>245</dd></div>
+      <div><dt>upstream pull requests</dt><dd>38</dd></div>
+      <div><dt>public projects</dt><dd>3</dd></div>
+      <div><dt>active since</dt><dd>Jul 2024</dd></div>
+    </dl>
+  </header>
+
+  <section class="block" id="activity" aria-labelledby="activity-title">
+    <div class="rail">
+      <p class="label">Activity</p>
+      <p class="rail-note">Jul 2024 – Sep 2026</p>
+    </div>
+    <div class="body">
+      <h2 class="section-title" id="activity-title">Commits by month</h2>
+      <p class="section-lede">Steady work on one teaching-assistant codebase since July 2024, with robotics and data-systems work added in 2026.</p>
+      <div class="panel">
+        <ul class="legend" id="legend"></ul>
+        <div class="chart" id="chart">
+          <svg id="chart-svg" role="img" aria-label="Stacked bar chart of monthly public commits from July 2024 to September 2026. TAI accounts for 240 of 245 commits, peaking at 57 in July 2024 and staying active from July 2025 through May 2026. HOPE and the DSCI 551 project add a few commits in 2026."></svg>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+        <p class="chart-note">Commits I authored in public repositories. TAI counts my branch history in my public fork of augcog/tai.</p>
+        <details class="data">
+          <summary>Show the numbers as a table</summary>
+          <div class="table-wrap"><table id="data-table"></table></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="work" aria-labelledby="work-title">
+    <div class="block">
+      <div class="rail"><p class="label">Selected work</p></div>
+      <div class="body">
+        <h2 class="section-title" id="work-title">Where the commits went</h2>
+        <p class="section-lede">Three public codebases. TAI holds most of the history.</p>
+      </div>
+    </div>
+
+    <article class="block project" style="--c: var(--s1)">
+      <div class="rail">
+        <p class="when">Jul 2024 – now</p>
+        <p class="focus">Document pipeline, retrieval, backend</p>
+        <p class="where">augcog/tai · ★ 25</p>
+      </div>
+      <div class="body">
+        <h3><span class="dot" aria-hidden="true"></span>TAI <span class="sub">Teaching Assistant Intelligence</span></h3>
+        <p class="summary">An open-source AI teaching assistant that answers questions from course materials. I worked on the path from raw course files to cited answers.</p>
+        <ul class="did">
+          <li>Built the PDF-to-Markdown converter and later moved it from Nougat to MinerU. Page numbers survive conversion, so answers can cite the page they came from. <a class="ref" href="https://github.com/augcog/tai/pull/56" target="_blank" rel="noopener">#56</a> <a class="ref" href="https://github.com/augcog/tai/pull/103" target="_blank" rel="noopener">#103</a> <a class="ref" href="https://github.com/augcog/tai/pull/108" target="_blank" rel="noopener">#108</a></li>
+          <li>Added video transcription with WhisperX and course support for ROAR Academy. <a class="ref" href="https://github.com/augcog/tai/pull/146" target="_blank" rel="noopener">#146</a> <a class="ref" href="https://github.com/augcog/tai/pull/151" target="_blank" rel="noopener">#151</a></li>
+          <li>Moved chunk storage from pickle files into a database, with file embeddings and database merges. <a class="ref" href="https://github.com/augcog/tai/pull/162" target="_blank" rel="noopener">#162</a></li>
+          <li>Split the backend query workflow into generation, query, memory, and audio services, and added local vLLM models for tutor mode. <a class="ref" href="https://github.com/augcog/tai/pull/169" target="_blank" rel="noopener">#169</a></li>
+        </ul>
+        <p class="facts"><span><b>240</b> commits</span><span><b>36</b> PRs, 12 merged</span><span><b>+43k / −19k</b> lines on main</span><a href="https://github.com/augcog/tai" target="_blank" rel="noopener">Repository ↗</a></p>
+      </div>
+    </article>
+
+    <article class="block project" style="--c: var(--s2)">
+      <div class="rail">
+        <p class="when">Jul – Aug 2026</p>
+        <p class="focus">Robot deployment and safety</p>
+        <p class="where">hitchopen/HOPE · ★ 46</p>
+      </div>
+      <div class="body">
+        <h3><span class="dot" aria-hidden="true"></span>HOPE <span class="sub">Humanoid table tennis on the Agibot A3</span></h3>
+        <p class="summary">An open challenge platform for humanoid table tennis from Hitch Interactive and Berkeley's ROAR platform. My public work there is on the deployment side: running policies on the real robot safely.</p>
+        <ul class="did">
+          <li>Packaged a fixed-motion serve for the A3's arms. The vendor stack keeps the waist, legs, and neck while my runner takes over only the 14 arm joints, with a SHA-256-bound package, a read-only preflight, and a guarded handoff and restore. <a class="ref" href="https://github.com/hitchopen/HOPE/pull/18" target="_blank" rel="noopener">#18</a></li>
+          <li>Added guarded run controls for the deployed policy, covering prepare, policy, PD stand, passive, and E-stop. The robot enters the policy only from a settled stand with a fresh calibration. <a class="ref" href="https://github.com/hitchopen/HOPE/pull/26" target="_blank" rel="noopener">#26</a></li>
+          <li>Added per-run calibration from NatNet motion-capture markers to the robot's CAD frame, with an atomic approval step and fail-closed checks in the base-pose relay. <a class="ref" href="https://github.com/hitchopen/HOPE/pull/26" target="_blank" rel="noopener">#26</a></li>
+          <li>Updated the Foxglove controls, ROS 2 bringup, and unit tests for the runner, calibration, and safety contracts. <a class="ref" href="https://github.com/hitchopen/HOPE/pull/26" target="_blank" rel="noopener">#26</a></li>
+        </ul>
+        <p class="facts"><span><b>2</b> PRs opened</span><span><b>+12k</b> lines proposed</span><a href="https://github.com/hitchopen/HOPE" target="_blank" rel="noopener">Repository ↗</a></p>
+      </div>
+    </article>
+
+    <article class="block project" style="--c: var(--s3)">
+      <div class="rail">
+        <p class="when">Apr – May 2026</p>
+        <p class="focus">Data systems course project</p>
+        <p class="where">yikangyu-usc/dsci-551-movielens-project</p>
+      </div>
+      <div class="body">
+        <h3><span class="dot" aria-hidden="true"></span>MovieLens Analytical API <span class="sub">DuckDB over 32 million ratings</span></h3>
+        <p class="summary">A DSCI 551 project: a FastAPI service that runs analytical queries over the MovieLens 32M dataset on DuckDB.</p>
+        <ul class="did">
+          <li>Built the API and the DuckDB layer for the four application operations the course required, with a demo script that reproduces the results.</li>
+          <li>Mapped each operation to DuckDB internals, columnar storage and vectorized execution, and checked the query plans with EXPLAIN ANALYZE.</li>
+          <li>Compared the design with MySQL and MongoDB, and documented setup, data loading, and reproduction end to end.</li>
+        </ul>
+        <p class="facts"><span><b>~32M</b> ratings</span><span><b>3</b> commits</span><a href="https://github.com/yikangyu-usc/dsci-551-movielens-project" target="_blank" rel="noopener">Repository ↗</a></p>
+      </div>
+    </article>
+  </section>
+
+  <section class="block" id="timeline" aria-labelledby="timeline-title">
+    <div class="rail">
+      <p class="label">Timeline</p>
+      <p class="rail-note">Oldest first</p>
+    </div>
+    <div class="body">
+      <h2 class="section-title" id="timeline-title">Milestones</h2>
+      <ol class="timeline" style="margin-top: 1.25rem">
+        <li style="--c: var(--s1)"><time datetime="2024-07">Jul 2024</time><span class="proj">TAI</span><p>First PDF conversion PRs to TAI.</p></li>
+        <li style="--c: var(--s1)"><time datetime="2024-12">Dec 2024</time><span class="proj">TAI</span><p>Page-aware chunk structure merged. <a class="ref" href="https://github.com/augcog/tai/pull/103" target="_blank" rel="noopener">tai#103</a></p></li>
+        <li style="--c: var(--s1)"><time datetime="2025-02">Feb 2025</time><span class="proj">TAI</span><p>Converter moved from Nougat to MinerU. <a class="ref" href="https://github.com/augcog/tai/pull/108" target="_blank" rel="noopener">tai#108</a></p></li>
+        <li style="--c: var(--s1)"><time datetime="2025-07">Jul 2025</time><span class="proj">TAI</span><p>Video transcription and ROAR Academy support. <a class="ref" href="https://github.com/augcog/tai/pull/151" target="_blank" rel="noopener">tai#151</a></p></li>
+        <li style="--c: var(--s1)"><time datetime="2025-10">Oct 2025</time><span class="proj">TAI</span><p>Chunks moved from pickle files to a database. <a class="ref" href="https://github.com/augcog/tai/pull/162" target="_blank" rel="noopener">tai#162</a></p></li>
+        <li style="--c: var(--s1)"><time datetime="2026-03">Mar 2026</time><span class="proj">TAI</span><p>Backend query refactor with local model support. <a class="ref" href="https://github.com/augcog/tai/pull/169" target="_blank" rel="noopener">tai#169</a></p></li>
+        <li style="--c: var(--s3)"><time datetime="2026-04">Apr 2026</time><span class="proj">DSCI 551</span><p>Started the MovieLens analytical API on DuckDB.</p></li>
+        <li style="--c: var(--s2)"><time datetime="2026-07">Jul 2026</time><span class="proj">HOPE</span><p>Arm serve workflow for the A3. <a class="ref" href="https://github.com/hitchopen/HOPE/pull/18" target="_blank" rel="noopener">HOPE#18</a></p></li>
+        <li style="--c: var(--s2)"><time datetime="2026-08">Aug 2026</time><span class="proj">HOPE</span><p>Guarded run controls and per-run calibration. <a class="ref" href="https://github.com/hitchopen/HOPE/pull/26" target="_blank" rel="noopener">HOPE#26</a></p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block" id="tools" aria-labelledby="tools-title">
+    <div class="rail"><p class="label">Tools</p></div>
+    <div class="body">
+      <h2 class="section-title" id="tools-title">What I work with</h2>
+      <dl class="tools" style="margin-top: 1.25rem">
+        <div><dt>Languages</dt><dd>Python, C++, SQL</dd></div>
+        <div><dt>Documents &amp; retrieval</dt><dd>MinerU, Nougat, WhisperX, embeddings, vLLM</dd></div>
+        <div><dt>Backend &amp; data</dt><dd>FastAPI, DuckDB, Parquet, PyTorch</dd></div>
+        <div><dt>Robotics</dt><dd>ROS 2, NatNet motion capture, Foxglove, CMake</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <footer class="block" id="contact">
+    <div class="rail"><p class="label">Contact</p></div>
+    <div class="body">
+      <ul class="foot-links">
+        <li class="email"><a href="mailto:yyk956614@berkeley.edu" id="email-2">yyk956614@berkeley.edu</a><button type="button" class="copy" data-copy="yyk956614@berkeley.edu" data-target="email-2">Copy</button></li>
+        <li><a href="https://github.com/Catrunaround" target="_blank" rel="noopener">github.com/Catrunaround</a></li>
+        <li><a href="https://github.com/yikangyu-usc" target="_blank" rel="noopener">github.com/yikangyu-usc</a></li>
+      </ul>
+      <p class="colophon">Numbers on this page come from my public GitHub history as of 30 September 2026.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  // copy buttons for the email address
+  Array.prototype.forEach.call(document.querySelectorAll('.copy'), function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      function selectFallback() {
+        var target = document.getElementById(btn.getAttribute('data-target'));
+        try {
+          var range = document.createRange();
+          range.selectNodeContents(target);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } catch (e) {}
+        btn.textContent = 'Selected';
+      }
+      try {
+        navigator.clipboard.writeText(text).then(function () { btn.textContent = 'Copied'; }, selectFallback);
+      } catch (e) { selectFallback(); }
+      setTimeout(function () { btn.textContent = 'Copy'; }, 1800);
+    });
+  });
+
+  var SERIES = [
+    { key: 'tai',  name: 'TAI',      c: '--s1' },
+    { key: 'hope', name: 'HOPE',     c: '--s2' },
+    { key: 'dsci', name: 'DSCI 551', c: '--s3' }
+  ];
+  var RAW = {
+    tai:  { '2024-07': 57, '2024-08': 11, '2024-10': 1, '2024-11': 1, '2024-12': 1, '2025-02': 2, '2025-03': 1, '2025-07': 27, '2025-08': 19, '2025-09': 12, '2025-10': 18, '2025-11': 16, '2025-12': 16, '2026-01': 5, '2026-02': 18, '2026-03': 17, '2026-04': 7, '2026-05': 9, '2026-09': 2 },
+    hope: { '2026-07': 1, '2026-08': 1 },
+    dsci: { '2026-04': 1, '2026-05': 2 }
+  };
+  var MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var months = [];
+  for (var y = 2024, m = 7; ; ) {
+    months.push(y + '-' + (m < 10 ? '0' : '') + m);
+    if (y === 2026 && m === 9) break;
+    if (++m > 12) { m = 1; y++; }
+  }
+  var rows = months.map(function (k) {
+    var v = SERIES.map(function (s) { return RAW[s.key][k] || 0; });
+    return { k: k, v: v, total: v.reduce(function (a, b) { return a + b; }, 0) };
+  });
+  var totals = SERIES.map(function (s, i) { return rows.reduce(function (a, r) { return a + r.v[i]; }, 0); });
+  function monthLabel(k) { return MN[+k.slice(5) - 1] + ' ' + k.slice(0, 4); }
+
+  // legend
+  var legend = document.getElementById('legend');
+  SERIES.forEach(function (s, i) {
+    var li = document.createElement('li');
+    li.style.setProperty('--c', 'var(' + s.c + ')');
+    li.innerHTML = '<span class="sw" aria-hidden="true"></span><span></span><span class="n"></span>';
+    li.children[1].textContent = s.name;
+    li.children[2].textContent = totals[i];
+    legend.appendChild(li);
+  });
+
+  // table view
+  var table = document.getElementById('data-table');
+  var html = '<thead><tr><th scope="col">Month</th>' + SERIES.map(function (s) { return '<th scope="col">' + s.name + '</th>'; }).join('') + '<th scope="col">Total</th></tr></thead><tbody>';
+  rows.forEach(function (r) {
+    html += '<tr><td>' + monthLabel(r.k) + '</td>' + r.v.map(function (v) { return v ? '<td>' + v + '</td>' : '<td class="z">–</td>'; }).join('') + (r.total ? '<td>' + r.total + '</td>' : '<td class="z">–</td>') + '</tr>';
+  });
+  html += '</tbody><tfoot><tr><td>All months</td>' + totals.map(function (t) { return '<td>' + t + '</td>'; }).join('') + '<td>' + totals.reduce(function (a, b) { return a + b; }, 0) + '</td></tr></tfoot>';
+  table.innerHTML = html;
+
+  // chart
+  var NS = 'http://www.w3.org/2000/svg';
+  var host = document.getElementById('chart');
+  var svg = document.getElementById('chart-svg');
+  var tip = document.getElementById('tip');
+  var geo = null;
+  function el(name, attrs, parent) {
+    var e = document.createElementNS(NS, name);
+    for (var a in attrs) e.setAttribute(a, attrs[a]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function topRounded(x, yt, w, h, r) {
+    var yb = yt + h;
+    return 'M' + x + ',' + yb + 'V' + (yt + r) + 'Q' + x + ',' + yt + ' ' + (x + r) + ',' + yt +
+      'H' + (x + w - r) + 'Q' + (x + w) + ',' + yt + ' ' + (x + w) + ',' + (yt + r) + 'V' + yb + 'Z';
+  }
+  function draw() {
+    var W = Math.max(280, Math.floor(host.clientWidth));
+    var H = W < 520 ? 200 : 230;
+    var mg = { l: 28, r: 4, t: 22, b: 26 };
+    var pw = W - mg.l - mg.r, ph = H - mg.t - mg.b;
+    var n = rows.length, band = pw / n, bw = Math.max(4, Math.min(22, band * 0.64));
+    var max = 60, ky = ph / max, base = mg.t + ph;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    [20, 40, 60].forEach(function (t) {
+      var y = base - t * ky;
+      el('line', { x1: mg.l, x2: W - mg.r, y1: y, y2: y, 'class': 'grid' }, svg);
+    });
+    [0, 20, 40, 60].forEach(function (t) {
+      var tx = el('text', { x: mg.l - 8, y: base - t * ky + 4, 'text-anchor': 'end', 'class': 'tick' }, svg);
+      tx.textContent = t;
+    });
+    var hl = el('rect', { 'class': 'hl', x: 0, y: mg.t, width: band, height: ph, rx: 4, visibility: 'hidden' }, svg);
+
+    rows.forEach(function (r, i) {
+      var mo = +r.k.slice(5);
+      var cx = mg.l + band * i + band / 2;
+      if (mo === 1 || mo === 7) {
+        var tx = el('text', { x: cx, y: H - 6, 'text-anchor': 'middle', 'class': 'tick' }, svg);
+        tx.textContent = MN[mo - 1] + " '" + r.k.slice(2, 4);
+      }
+      var x = cx - bw / 2, y0 = base;
+      var segs = [];
+      r.v.forEach(function (v, si) { if (v) segs.push({ si: si, h: v * ky }); });
+      segs.forEach(function (s, j) {
+        var top = y0 - s.h;
+        var bottom = j > 0 ? y0 - 2 : y0;
+        var h = Math.max(1.5, bottom - top);
+        var yt = bottom - h;
+        var fill = 'var(' + SERIES[s.si].c + ')';
+        if (j === segs.length - 1) {
+          el('path', { d: topRounded(x, yt, bw, h, Math.min(4, h / 2, bw / 2)), style: 'fill:' + fill }, svg);
+        } else {
+          el('rect', { x: x, y: yt, width: bw, height: h, style: 'fill:' + fill }, svg);
+        }
+        y0 = top;
+      });
+      if (r.total >= 25) {
+        var pk = el('text', { x: cx, y: base - r.total * ky - 7, 'text-anchor': 'middle', 'class': 'peak' }, svg);
+        pk.textContent = r.total;
+      }
+    });
+    el('line', { x1: mg.l, x2: W - mg.r, y1: base, y2: base, 'class': 'axis' }, svg);
+    geo = { W: W, mg: mg, band: band, hl: hl, ph: ph };
+  }
+
+  function show(i) {
+    if (!geo || i < 0 || i >= rows.length) { hide(); return; }
+    var r = rows[i];
+    geo.hl.setAttribute('x', geo.mg.l + geo.band * i);
+    geo.hl.setAttribute('visibility', 'visible');
+    var out = '<b></b>';
+    SERIES.forEach(function (s, si) {
+      out += '<div class="row' + (r.v[si] ? '' : ' zero') + '" style="--c:var(' + s.c + ')"><span class="sw"></span><span></span><span>' + r.v[si] + '</span></div>';
+    });
+    tip.innerHTML = out;
+    tip.firstChild.textContent = monthLabel(r.k) + ' · ' + r.total + (r.total === 1 ? ' commit' : ' commits');
+    var names = tip.querySelectorAll('.row span:nth-child(2)');
+    SERIES.forEach(function (s, si) { names[si].textContent = s.name; });
+    tip.hidden = false;
+    var cx = geo.mg.l + geo.band * (i + 0.5);
+    var tw = tip.offsetWidth;
+    var left = cx < geo.W / 2 ? cx + geo.band : cx - geo.band - tw;
+    left = Math.max(0, Math.min(geo.W - tw, left));
+    tip.style.left = left + 'px';
+    tip.style.top = geo.mg.t + 'px';
+  }
+  function hide() {
+    tip.hidden = true;
+    if (geo) geo.hl.setAttribute('visibility', 'hidden');
+  }
+  function indexAt(evt) {
+    var rect = svg.getBoundingClientRect();
+    var x = evt.clientX - rect.left;
+    if (x < geo.mg.l) return -1;
+    return Math.floor((x - geo.mg.l) / geo.band);
+  }
+  svg.addEventListener('pointermove', function (e) { if (geo) show(indexAt(e)); });
+  svg.addEventListener('pointerdown', function (e) { if (geo) show(indexAt(e)); });
+  svg.addEventListener('pointerleave', hide);
+
+  draw();
+  var raf = 0;
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(function () {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () { hide(); draw(); });
+    }).observe(host);
+  } else {
+    window.addEventListener('resize', function () { hide(); draw(); });
+  }
+})();
+</script>
+</body>
+</html>
